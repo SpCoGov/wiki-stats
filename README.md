@@ -12,19 +12,23 @@ A pure frontend React dashboard for MediaWiki contribution and patrol statistics
 - Apache ECharts
 - i18next
 
-## Phase 1 MVP
+## Supported Features
 
-- Configurable Wiki API endpoint, stored in `localStorage`
+- Configurable MediaWiki API endpoint
+- Settings stored in `localStorage`
+- Light, dark, and system theme modes
 - `zh-CN`, `en-US`, and `ja-JP` locale structure
-- MUI light / dark / system theme support
-- User contribution query through `list=usercontribs`
-- Contribution table with sorting and pagination
-- Edit trend, hourly, weekday, namespace, top page, and top user charts
-- Hash-based routing and relative Vite base for GitHub Pages compatibility
-
-## Notes
-
-Patrol and patrol speed pages are scaffolded for phase 2. If a Wiki does not expose patrol logs or hides related revision data, the UI reports that the feature is unavailable because some logs are not public.
+- Contribution queries with `list=usercontribs`
+- Patrol log queries with `list=logevents&letype=patrol`
+- Optional patrol speed calculation from patrol time and revision time
+- Filters for user, user group, permission, date range, namespace, minor edits, page title, and request batch count
+- Batch progress display for main list, revision detail, and user metadata requests
+- DataGrid tables with sorting, pagination, localized labels, and diff links
+- Namespace name lookup through siteinfo
+- Chart type switching between line, bar, scatter, radar, and pie charts
+- Linear and logarithmic chart scales for supported chart types
+- Localized error handling for network, timeout, API, and private log failures
+- GitHub Pages deployment workflow
 
 ## Development
 
@@ -38,5 +42,3 @@ npm run dev
 ```bash
 npm run build
 ```
-
-Deploy the generated `dist` directory to GitHub Pages, Netlify, or Vercel.
