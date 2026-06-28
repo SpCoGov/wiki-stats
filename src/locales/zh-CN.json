@@ -1,0 +1,144 @@
+{
+  "app": {
+    "name": "Wiki 贡献与巡查统计",
+    "api": "API Endpoint"
+  },
+  "nav": {
+    "contributions": "贡献记录",
+    "patrol": "巡查记录",
+    "settings": "设置"
+  },
+  "actions": {
+    "search": "查询",
+    "reset": "重置",
+    "save": "保存",
+    "openDiff": "查看 diff"
+  },
+  "common": {
+    "loading": "加载中",
+    "empty": "暂无数据",
+    "all": "全部",
+    "notQueried": "设置筛选条件后点击查询加载数据"
+  },
+  "units": {
+    "minutes": "分钟"
+  },
+  "chartTypes": {
+    "line": "折线",
+    "bar": "柱状",
+    "pie": "饼图"
+  },
+  "errors": {
+    "network": "无法连接 Wiki API，请检查 Endpoint 或 CORS 设置。",
+    "timeout": "请求超时，请缩小查询范围后重试。",
+    "privateLog": "因某些日志不开放导致此功能不可用",
+    "generic": "查询失败，请检查参数后重试。"
+  },
+  "metrics": {
+    "totalEdits": "总编辑数",
+    "totalPatrols": "总巡查数",
+    "todayEdits": "今日编辑数",
+    "todayPatrols": "今日巡查数",
+    "editTrend": "编辑趋势",
+    "patrolTrend": "巡查趋势"
+  },
+  "dateRange": {
+    "label": "时间范围",
+    "from": "开始日期",
+    "to": "结束日期",
+    "7d": "最近 7 天",
+    "30d": "最近 30 天",
+    "90d": "最近 90 天",
+    "all": "全部时间",
+    "custom": "自定义"
+  },
+  "filters": {
+    "userGroup": "用户组",
+    "userGroupPlaceholder": "例如 sysop",
+    "userRight": "权限",
+    "userRightPlaceholder": "例如 patrol",
+    "batchProgress": "已请求 {{completed}} / {{total}} 批，每批最多 {{batchSize}} 条",
+    "phaseList": "正在请求主列表",
+    "phaseRevisionDetails": "正在补充修订详情",
+    "phaseUserMeta": "正在补充用户组和权限"
+  },
+  "patrol": {
+    "title": "巡查记录",
+    "filters": "筛选器",
+    "user": "巡查员用户名",
+    "userPlaceholder": "留空查询全部巡查员",
+    "titleFilter": "页面标题",
+    "titlePlaceholder": "留空查询全部页面",
+    "pageLimit": "最大请求页数",
+    "peakHour": "巡查高峰",
+    "incomplete": "数据不完整",
+    "completeSpeedCount": "可计算速度记录",
+    "averageDelay": "平均巡查速度",
+    "medianDelay": "中位巡查速度",
+    "fastest": "最快巡查",
+    "slowest": "最慢巡查",
+    "columns": {
+      "timestamp": "巡查时间",
+      "patroller": "巡查员",
+      "revisionId": "被巡查 revision id",
+      "oldRevisionId": "old revision id",
+      "revisionTimestamp": "修订时间",
+      "revisionUser": "被巡查编辑作者",
+      "patrolDelay": "巡查耗时",
+      "title": "页面标题",
+      "namespace": "命名空间",
+      "action": "动作类型",
+      "comment": "日志摘要",
+      "incomplete": "数据状态",
+      "diff": "Diff"
+    }
+  },
+  "contributions": {
+    "title": "贡献记录",
+    "filters": "筛选器",
+    "user": "用户名",
+    "userPlaceholder": "输入用户名后查询",
+    "namespace": "命名空间",
+    "minor": "小编辑",
+    "minorOnly": "仅小编辑",
+    "nonMinorOnly": "排除小编辑",
+    "pageLimit": "最大请求页数",
+    "peakHour": "编辑高峰",
+    "columns": {
+      "timestamp": "编辑时间",
+      "user": "用户名",
+      "title": "页面标题",
+      "namespace": "命名空间",
+      "comment": "编辑摘要",
+      "revisionId": "revision id",
+      "oldRevisionId": "old revision id",
+      "sizeDiff": "大小变化",
+      "isMinor": "小编辑",
+      "isNew": "新页面",
+      "tags": "Tags",
+      "diff": "Diff"
+    }
+  },
+  "charts": {
+    "hourly": "按小时分布",
+    "weekday": "按星期分布",
+    "namespace": "命名空间分布",
+    "topEditedPages": "编辑最多页面",
+    "topPatrolledPages": "被巡查最多页面",
+    "topUsers": "最活跃用户",
+    "speedDistribution": "巡查速度分布",
+    "averageSpeedByUser": "按巡查员平均速度",
+    "averageSpeedByNamespace": "按命名空间平均速度",
+    "averageSpeedTrend": "平均巡查速度趋势（分钟）"
+  },
+  "settings": {
+    "title": "设置",
+    "apiEndpoint": "Wiki API Endpoint",
+    "language": "语言",
+    "themeMode": "主题",
+    "light": "浅色",
+    "dark": "深色",
+    "system": "跟随系统",
+    "saved": "设置已保存"
+  }
+}

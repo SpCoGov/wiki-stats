@@ -1,0 +1,144 @@
+{
+  "app": {
+    "name": "Wiki Contributions and Patrol Dashboard",
+    "api": "API Endpoint"
+  },
+  "nav": {
+    "contributions": "Contributions",
+    "patrol": "Patrol logs",
+    "settings": "Settings"
+  },
+  "actions": {
+    "search": "Search",
+    "reset": "Reset",
+    "save": "Save",
+    "openDiff": "Open diff"
+  },
+  "common": {
+    "loading": "Loading",
+    "empty": "No data",
+    "all": "All",
+    "notQueried": "Set filters and click Search to load data"
+  },
+  "units": {
+    "minutes": "minutes"
+  },
+  "chartTypes": {
+    "line": "Line",
+    "bar": "Bar",
+    "pie": "Pie"
+  },
+  "errors": {
+    "network": "Unable to reach the Wiki API. Check the endpoint or CORS settings.",
+    "timeout": "Request timed out. Try a smaller query range.",
+    "privateLog": "This feature is unavailable because some logs are not public.",
+    "generic": "Query failed. Check the parameters and try again."
+  },
+  "metrics": {
+    "totalEdits": "Total edits",
+    "totalPatrols": "Total patrols",
+    "todayEdits": "Today's edits",
+    "todayPatrols": "Today's patrols",
+    "editTrend": "Edit trend",
+    "patrolTrend": "Patrol trend"
+  },
+  "dateRange": {
+    "label": "Date range",
+    "from": "Start date",
+    "to": "End date",
+    "7d": "Last 7 days",
+    "30d": "Last 30 days",
+    "90d": "Last 90 days",
+    "all": "All time",
+    "custom": "Custom"
+  },
+  "filters": {
+    "userGroup": "User group",
+    "userGroupPlaceholder": "e.g. sysop",
+    "userRight": "Permission",
+    "userRightPlaceholder": "e.g. patrol",
+    "batchProgress": "Requested {{completed}} / {{total}} batches, up to {{batchSize}} rows each",
+    "phaseList": "Requesting main list",
+    "phaseRevisionDetails": "Loading revision details",
+    "phaseUserMeta": "Loading user groups and permissions"
+  },
+  "patrol": {
+    "title": "Patrol logs",
+    "filters": "Filters",
+    "user": "Patroller username",
+    "userPlaceholder": "Leave blank for all patrollers",
+    "titleFilter": "Page title",
+    "titlePlaceholder": "Leave blank for all pages",
+    "pageLimit": "Max request pages",
+    "peakHour": "Peak patrol hour",
+    "incomplete": "Incomplete data",
+    "completeSpeedCount": "Speed-ready records",
+    "averageDelay": "Average patrol speed",
+    "medianDelay": "Median patrol speed",
+    "fastest": "Fastest patrol",
+    "slowest": "Slowest patrol",
+    "columns": {
+      "timestamp": "Patrol time",
+      "patroller": "Patroller",
+      "revisionId": "Patrolled revision id",
+      "oldRevisionId": "old revision id",
+      "revisionTimestamp": "Revision time",
+      "revisionUser": "Patrolled edit author",
+      "patrolDelay": "Patrol delay",
+      "title": "Page title",
+      "namespace": "Namespace",
+      "action": "Action",
+      "comment": "Log summary",
+      "incomplete": "Data status",
+      "diff": "Diff"
+    }
+  },
+  "contributions": {
+    "title": "Contributions",
+    "filters": "Filters",
+    "user": "Username",
+    "userPlaceholder": "Enter a username",
+    "namespace": "Namespace",
+    "minor": "Minor edit",
+    "minorOnly": "Minor only",
+    "nonMinorOnly": "Exclude minor",
+    "pageLimit": "Max request pages",
+    "peakHour": "Peak hour",
+    "columns": {
+      "timestamp": "Edit time",
+      "user": "User",
+      "title": "Page title",
+      "namespace": "Namespace",
+      "comment": "Summary",
+      "revisionId": "revision id",
+      "oldRevisionId": "old revision id",
+      "sizeDiff": "Size diff",
+      "isMinor": "Minor",
+      "isNew": "New page",
+      "tags": "Tags",
+      "diff": "Diff"
+    }
+  },
+  "charts": {
+    "hourly": "Hourly distribution",
+    "weekday": "Weekday distribution",
+    "namespace": "Namespace distribution",
+    "topEditedPages": "Most edited pages",
+    "topPatrolledPages": "Most patrolled pages",
+    "topUsers": "Top users",
+    "speedDistribution": "Patrol speed distribution",
+    "averageSpeedByUser": "Average speed by patroller",
+    "averageSpeedByNamespace": "Average speed by namespace",
+    "averageSpeedTrend": "Average patrol speed trend (minutes)"
+  },
+  "settings": {
+    "title": "Settings",
+    "apiEndpoint": "Wiki API Endpoint",
+    "language": "Language",
+    "themeMode": "Theme",
+    "light": "Light",
+    "dark": "Dark",
+    "system": "System",
+    "saved": "Settings saved"
+  }
+}
