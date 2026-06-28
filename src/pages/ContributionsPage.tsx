@@ -1,4 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
+import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
   Button,
@@ -27,7 +28,8 @@ import { useNamespaces } from "../hooks/useNamespaces";
 import type { ContributionFilters } from "../types/mediawiki";
 import type { DateRangePreset } from "../types/settings";
 import { resolveQueryDateRange } from "../utils/dateRange";
-import { getContributionStats } from "../utils/stats";
+import { downloadCsv } from "../utils/csv";
+import { getContributionStats, getContributionTrend, type TrendGranularity } from "../utils/stats";
 
 function namespaceLabel(namespaceId: number | undefined, namespaces?: Map<number, string>) {
   if (namespaceId === undefined) {
@@ -49,6 +51,7 @@ export function ContributionsPage() {
   const [dateRange, setDateRange] = useState<DateRangePreset>("30d");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [trendGranularity, setTrendGranularity] = useState<TrendGranularity>("day");
   const [filters, setFilters] = useState<ContributionFilters | undefined>();
   const [progress, setProgress] = useState({
     completedPages: 0,
@@ -75,6 +78,10 @@ export function ContributionsPage() {
     [namespaceQuery.data, query.data?.records],
   );
   const stats = useMemo(() => getContributionStats(records), [records]);
+  const trend = useMemo(
+    () => getContributionTrend(records, trendGranularity),
+    [records, trendGranularity],
+  );
 
   const columns = useMemo<GridColDef[]>(
     () => [
@@ -282,6 +289,46 @@ export function ContributionsPage() {
       </Grid>
       <Card variant="outlined">
         <CardContent>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2, justifyContent: "space-between" }}>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              disabled={records.length === 0}
+              onClick={() =>
+                downloadCsv(
+                  "wiki-contributions.csv",
+                  records.map((record) => ({
+                    timestamp: record.timestamp,
+                    user: record.user,
+                    title: record.title,
+                    namespace: record.namespaceName ?? record.namespace,
+                    comment: record.comment,
+                    revisionId: record.revisionId,
+                    oldRevisionId: record.oldRevisionId,
+                    sizeDiff: record.sizeDiff,
+                    isMinor: record.isMinor,
+                    isNew: record.isNew,
+                    tags: record.tags.join("|"),
+                    diffUrl: record.diffUrl,
+                  })),
+                )
+              }
+            >
+              {t("actions.exportCsv")}
+            </Button>
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>{t("charts.trendGranularity")}</InputLabel>
+              <Select
+                value={trendGranularity}
+                label={t("charts.trendGranularity")}
+                onChange={(event) => setTrendGranularity(event.target.value as TrendGranularity)}
+              >
+                <MenuItem value="day">{t("charts.day")}</MenuItem>
+                <MenuItem value="week">{t("charts.week")}</MenuItem>
+                <MenuItem value="month">{t("charts.month")}</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
           <Box sx={{ height: 560 }}>
             <WikiDataGrid
               rows={records}
@@ -295,7 +342,7 @@ export function ContributionsPage() {
       </Card>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.editTrend")} points={stats?.daily ?? []} defaultKind="line" availableKinds={allChartKinds} />
+          <SwitchableChart title={t("metrics.editTrend")} points={trend} defaultKind="line" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
           <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />

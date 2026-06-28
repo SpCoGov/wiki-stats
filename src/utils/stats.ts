@@ -6,6 +6,8 @@ import type {
   PatrolStats,
 } from "../types/mediawiki";
 
+export type TrendGranularity = "day" | "week" | "month";
+
 function countBy<T>(items: T[], getKey: (item: T) => string) {
   const map = new Map<string, number>();
   items.forEach((item) => {
@@ -63,6 +65,30 @@ function delayBucket(delayMs: number) {
   return ">24h";
 }
 
+export function trendLabel(timestamp: string, granularity: TrendGranularity) {
+  const time = dayjs(timestamp);
+  if (granularity === "week") {
+    const week = Math.floor(time.diff(time.startOf("year"), "day") / 7) + 1;
+    return `${time.year()}-W${String(week).padStart(2, "0")}`;
+  }
+  if (granularity === "month") {
+    return time.format("YYYY-MM");
+  }
+  return time.format("YYYY-MM-DD");
+}
+
+export function getContributionTrend(records: ContributionRecord[], granularity: TrendGranularity) {
+  return countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
+export function getPatrolTrend(records: PatrolRecord[], granularity: TrendGranularity) {
+  return countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
+    a.label.localeCompare(b.label),
+  );
+}
+
 export function getContributionStats(records: ContributionRecord[]): ContributionStats {
   const today = dayjs().format("YYYY-MM-DD");
   const hourly = Array.from({ length: 24 }, (_, hour) => ({
@@ -85,7 +111,7 @@ export function getContributionStats(records: ContributionRecord[]): Contributio
   return {
     totalEdits: records.length,
     todayEdits: records.filter((record) => dayjs(record.timestamp).format("YYYY-MM-DD") === today).length,
-    daily: countBy(records, (record) => dayjs(record.timestamp).format("YYYY-MM-DD")).reverse(),
+    daily: getContributionTrend(records, "day"),
     hourly,
     weekday: weekdays,
     namespaces: countBy(records, (record) => record.namespaceName ?? String(record.namespace)),
@@ -128,7 +154,7 @@ export function getPatrolStats(records: PatrolRecord[]): PatrolStats {
     medianDelayMs: median(delays),
     fastest,
     slowest,
-    daily: countBy(records, (record) => dayjs(record.timestamp).format("YYYY-MM-DD")).reverse(),
+    daily: getPatrolTrend(records, "day"),
     hourly,
     weekday: weekdays,
     topPatrollers: countBy(records, (record) => record.patroller || "-").slice(0, 10),

@@ -12,6 +12,7 @@
     "search": "Search",
     "reset": "Reset",
     "save": "Save",
+    "exportCsv": "Export CSV",
     "openDiff": "Open diff"
   },
   "common": {
@@ -142,7 +143,11 @@
     "speedDistribution": "Patrol speed distribution",
     "averageSpeedByUser": "Average speed by patroller",
     "averageSpeedByNamespace": "Average speed by namespace",
-    "averageSpeedTrend": "Average patrol speed trend (minutes)"
+    "averageSpeedTrend": "Average patrol speed trend (minutes)",
+    "trendGranularity": "Trend granularity",
+    "day": "Daily",
+    "week": "Weekly",
+    "month": "Monthly"
   },
   "settings": {
     "title": "Settings",

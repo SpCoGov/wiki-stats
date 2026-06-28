@@ -12,6 +12,7 @@
     "search": "查询",
     "reset": "重置",
     "save": "保存",
+    "exportCsv": "导出 CSV",
     "openDiff": "查看 diff"
   },
   "common": {
@@ -142,7 +143,11 @@
     "speedDistribution": "巡查速度分布",
     "averageSpeedByUser": "按巡查员平均速度",
     "averageSpeedByNamespace": "按命名空间平均速度",
-    "averageSpeedTrend": "平均巡查速度趋势（分钟）"
+    "averageSpeedTrend": "平均巡查速度趋势（分钟）",
+    "trendGranularity": "趋势粒度",
+    "day": "按日",
+    "week": "按周",
+    "month": "按月"
   },
   "settings": {
     "title": "设置",

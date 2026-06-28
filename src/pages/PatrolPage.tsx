@@ -1,4 +1,5 @@
 import SearchIcon from "@mui/icons-material/Search";
+import DownloadIcon from "@mui/icons-material/Download";
 import {
   Box,
   Button,
@@ -29,8 +30,9 @@ import { usePatrolLogs } from "../hooks/usePatrolLogs";
 import type { PatrolFilters } from "../types/mediawiki";
 import type { DateRangePreset } from "../types/settings";
 import { resolveQueryDateRange } from "../utils/dateRange";
+import { downloadCsv } from "../utils/csv";
 import { formatDuration } from "../utils/format";
-import { getPatrolStats } from "../utils/stats";
+import { getPatrolStats, getPatrolTrend, type TrendGranularity } from "../utils/stats";
 
 function namespaceLabel(namespaceId: number | undefined, namespaces?: Map<number, string>) {
   if (namespaceId === undefined) {
@@ -52,6 +54,7 @@ export function PatrolPage() {
   const [dateRange, setDateRange] = useState<DateRangePreset>("30d");
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [trendGranularity, setTrendGranularity] = useState<TrendGranularity>("day");
   const [filters, setFilters] = useState<PatrolFilters | undefined>();
   const [progress, setProgress] = useState({
     completedPages: 0,
@@ -78,6 +81,7 @@ export function PatrolPage() {
     [namespaceQuery.data, query.data?.records],
   );
   const stats = useMemo(() => getPatrolStats(records), [records]);
+  const trend = useMemo(() => getPatrolTrend(records, trendGranularity), [records, trendGranularity]);
 
   const columns = useMemo<GridColDef[]>(
     () => [
@@ -310,6 +314,47 @@ export function PatrolPage() {
       </Grid>
       <Card variant="outlined">
         <CardContent>
+          <Stack direction={{ xs: "column", sm: "row" }} spacing={2} sx={{ mb: 2, justifyContent: "space-between" }}>
+            <Button
+              variant="outlined"
+              startIcon={<DownloadIcon />}
+              disabled={records.length === 0}
+              onClick={() =>
+                downloadCsv(
+                  "wiki-patrol-logs.csv",
+                  records.map((record) => ({
+                    patrolTimestamp: record.timestamp,
+                    patroller: record.patroller,
+                    revisionId: record.revisionId,
+                    oldRevisionId: record.oldRevisionId,
+                    revisionTimestamp: record.revisionTimestamp,
+                    revisionUser: record.revisionUser,
+                    patrolDelay: formatDuration(record.patrolDelayMs),
+                    title: record.title,
+                    namespace: record.namespaceName ?? record.namespace,
+                    action: record.action,
+                    comment: record.comment,
+                    incomplete: record.incomplete,
+                    diffUrl: record.diffUrl,
+                  })),
+                )
+              }
+            >
+              {t("actions.exportCsv")}
+            </Button>
+            <FormControl sx={{ minWidth: 160 }}>
+              <InputLabel>{t("charts.trendGranularity")}</InputLabel>
+              <Select
+                value={trendGranularity}
+                label={t("charts.trendGranularity")}
+                onChange={(event) => setTrendGranularity(event.target.value as TrendGranularity)}
+              >
+                <MenuItem value="day">{t("charts.day")}</MenuItem>
+                <MenuItem value="week">{t("charts.week")}</MenuItem>
+                <MenuItem value="month">{t("charts.month")}</MenuItem>
+              </Select>
+            </FormControl>
+          </Stack>
           <Box sx={{ height: 560 }}>
             <WikiDataGrid
               rows={records}
@@ -323,7 +368,7 @@ export function PatrolPage() {
       </Card>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.patrolTrend")} points={stats?.daily ?? []} defaultKind="line" availableKinds={allChartKinds} />
+          <SwitchableChart title={t("metrics.patrolTrend")} points={trend} defaultKind="line" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
           <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />
