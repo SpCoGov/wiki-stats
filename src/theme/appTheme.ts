@@ -61,6 +61,24 @@ export function createAppTheme(mode: PaletteMode) {
         styleOverrides: {
           root: {
             backgroundImage: "none",
+            borderColor: mode === "dark" ? "#2b313a" : "#dfe3ea",
+          },
+        },
+      },
+      MuiTextField: {
+        defaultProps: {
+          size: "small",
+        },
+      },
+      MuiFormControl: {
+        defaultProps: {
+          size: "small",
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            textTransform: "none",
           },
         },
       },

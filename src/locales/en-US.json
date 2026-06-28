@@ -20,13 +20,25 @@
     "all": "All",
     "notQueried": "Set filters and click Search to load data"
   },
+  "dataGrid": {
+    "rowsPerPage": "Rows per page:",
+    "displayedRows": "{{from}}–{{to}} of {{count}}",
+    "moreThan": "more than {{to}}",
+    "rowsSelected": "{{count}} row(s) selected"
+  },
   "units": {
     "minutes": "minutes"
   },
   "chartTypes": {
     "line": "Line",
     "bar": "Bar",
-    "pie": "Pie"
+    "pie": "Pie",
+    "scatter": "Scatter",
+    "radar": "Radar"
+  },
+  "scaleTypes": {
+    "linear": "Linear",
+    "log": "Log"
   },
   "errors": {
     "network": "Unable to reach the Wiki API. Check the endpoint or CORS settings.",
@@ -69,6 +81,7 @@
     "userPlaceholder": "Leave blank for all patrollers",
     "titleFilter": "Page title",
     "titlePlaceholder": "Leave blank for all pages",
+    "includeSpeed": "Calculate patrol speed",
     "pageLimit": "Max request pages",
     "peakHour": "Peak patrol hour",
     "incomplete": "Incomplete data",

@@ -6,21 +6,24 @@ import {
   CardContent,
   CircularProgress,
   FormControl,
+  FormControlLabel,
   Grid,
   InputLabel,
   LinearProgress,
   MenuItem,
   Select,
   Stack,
+  Switch,
   TextField,
   Typography,
 } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import type { GridColDef } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SwitchableChart } from "../charts/BaseChart";
 import { ErrorState } from "../components/ErrorState";
 import { MetricCard } from "../components/MetricCard";
+import { WikiDataGrid } from "../components/WikiDataGrid";
 import { useNamespaces } from "../hooks/useNamespaces";
 import { usePatrolLogs } from "../hooks/usePatrolLogs";
 import type { PatrolFilters } from "../types/mediawiki";
@@ -36,11 +39,14 @@ function namespaceLabel(namespaceId: number | undefined, namespaces?: Map<number
   return namespaces?.get(namespaceId) ?? String(namespaceId);
 }
 
+const allChartKinds = ["line", "bar", "scatter", "radar", "pie"] as const;
+
 export function PatrolPage() {
   const { t } = useTranslation();
   const [user, setUser] = useState("");
   const [userGroup, setUserGroup] = useState("");
   const [userRight, setUserRight] = useState("");
+  const [includeSpeed, setIncludeSpeed] = useState(true);
   const [title, setTitle] = useState("");
   const [limitPages, setLimitPages] = useState(3);
   const [dateRange, setDateRange] = useState<DateRangePreset>("30d");
@@ -117,11 +123,18 @@ export function PatrolPage() {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">{t("patrol.title")}</Typography>
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">{t("patrol.filters")}</Typography>
+      <Stack spacing={0.5}>
+        <Typography variant="h4">{t("patrol.title")}</Typography>
+        {!filters ? (
+          <Typography variant="body2" color="text.secondary">
+            {t("common.notQueried")}
+          </Typography>
+        ) : null}
+      </Stack>
+      <Card variant="outlined" sx={{ overflow: "hidden" }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Stack spacing={2.25}>
+            <Typography variant="subtitle1">{t("patrol.filters")}</Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
@@ -210,11 +223,22 @@ export function PatrolPage() {
                 />
               </Grid>
               <Grid size={{ xs: 12, md: 2 }}>
+                <FormControlLabel
+                  control={
+                    <Switch
+                      checked={includeSpeed}
+                      onChange={(event) => setIncludeSpeed(event.target.checked)}
+                    />
+                  }
+                  label={t("patrol.includeSpeed")}
+                />
+              </Grid>
+              <Grid size={{ xs: 12, md: 2 }}>
                 <Button
                   fullWidth
                   variant="contained"
                   startIcon={query.isFetching ? <CircularProgress color="inherit" size={18} /> : <SearchIcon />}
-                  sx={{ height: "100%" }}
+                  sx={{ minHeight: 40 }}
                   onClick={() =>
                     {
                       setProgress({ completedPages: 0, maxPages: limitPages, phase: "list", batchSize: 500 });
@@ -223,6 +247,7 @@ export function PatrolPage() {
                         user,
                         userGroup,
                         userRight,
+                        includeSpeed,
                         title,
                         limitPages,
                       });
@@ -235,7 +260,7 @@ export function PatrolPage() {
             </Grid>
           </Stack>
           {query.isFetching ? (
-            <Stack spacing={1} sx={{ mt: 2 }}>
+            <Stack spacing={1}>
               <LinearProgress
                 variant="determinate"
                 value={
@@ -257,7 +282,6 @@ export function PatrolPage() {
         </CardContent>
       </Card>
       {query.error ? <ErrorState error={query.error} /> : null}
-      {!filters ? <Typography color="text.secondary">{t("common.notQueried")}</Typography> : null}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard label={t("metrics.totalPatrols")} value={stats?.totalPatrols ?? 0} />
@@ -287,11 +311,10 @@ export function PatrolPage() {
       <Card variant="outlined">
         <CardContent>
           <Box sx={{ height: 560 }}>
-            <DataGrid
+            <WikiDataGrid
               rows={records}
               columns={columns}
               loading={query.isLoading || query.isFetching}
-              pageSizeOptions={[25, 50, 100]}
               initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
               disableRowSelectionOnClick
             />
@@ -300,22 +323,22 @@ export function PatrolPage() {
       </Card>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.patrolTrend")} points={stats?.daily ?? []} defaultKind="line" />
+          <SwitchableChart title={t("metrics.patrolTrend")} points={stats?.daily ?? []} defaultKind="line" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topUsers")} points={stats?.topPatrollers ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.topUsers")} points={stats?.topPatrollers ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topPatrolledPages")} points={stats?.topPages ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.topPatrolledPages")} points={stats?.topPages ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.speedDistribution")} points={stats?.delayDistribution ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.speedDistribution")} points={stats?.delayDistribution ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
           <SwitchableChart
@@ -323,6 +346,7 @@ export function PatrolPage() {
             points={(stats?.averageDelayDaily ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
             defaultKind="line"
             unit={t("units.minutes")}
+            availableKinds={allChartKinds}
           />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
@@ -331,6 +355,7 @@ export function PatrolPage() {
             points={(stats?.averageDelayByPatroller ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
             defaultKind="bar"
             unit={t("units.minutes")}
+            availableKinds={allChartKinds}
           />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
@@ -339,6 +364,7 @@ export function PatrolPage() {
             points={(stats?.averageDelayByNamespace ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
             defaultKind="bar"
             unit={t("units.minutes")}
+            availableKinds={allChartKinds}
           />
         </Grid>
       </Grid>

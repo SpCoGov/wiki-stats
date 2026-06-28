@@ -20,13 +20,25 @@
     "all": "全部",
     "notQueried": "设置筛选条件后点击查询加载数据"
   },
+  "dataGrid": {
+    "rowsPerPage": "每页行数：",
+    "displayedRows": "{{from}}–{{to}} / {{count}}",
+    "moreThan": "超过 {{to}}",
+    "rowsSelected": "已选择 {{count}} 行"
+  },
   "units": {
     "minutes": "分钟"
   },
   "chartTypes": {
     "line": "折线",
     "bar": "柱状",
-    "pie": "饼图"
+    "pie": "饼图",
+    "scatter": "散点",
+    "radar": "雷达"
+  },
+  "scaleTypes": {
+    "linear": "线性",
+    "log": "对数"
   },
   "errors": {
     "network": "无法连接 Wiki API，请检查 Endpoint 或 CORS 设置。",
@@ -69,6 +81,7 @@
     "userPlaceholder": "留空查询全部巡查员",
     "titleFilter": "页面标题",
     "titlePlaceholder": "留空查询全部页面",
+    "includeSpeed": "计算巡查速度",
     "pageLimit": "最大请求页数",
     "peakHour": "巡查高峰",
     "incomplete": "数据不完整",

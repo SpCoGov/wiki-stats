@@ -15,12 +15,13 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import type { GridColDef } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { SwitchableChart } from "../charts/BaseChart";
 import { ErrorState } from "../components/ErrorState";
 import { MetricCard } from "../components/MetricCard";
+import { WikiDataGrid } from "../components/WikiDataGrid";
 import { useContributions } from "../hooks/useContributions";
 import { useNamespaces } from "../hooks/useNamespaces";
 import type { ContributionFilters } from "../types/mediawiki";
@@ -34,6 +35,8 @@ function namespaceLabel(namespaceId: number | undefined, namespaces?: Map<number
   }
   return namespaces?.get(namespaceId) ?? String(namespaceId);
 }
+
+const allChartKinds = ["line", "bar", "scatter", "radar", "pie"] as const;
 
 export function ContributionsPage() {
   const { t } = useTranslation();
@@ -108,11 +111,18 @@ export function ContributionsPage() {
 
   return (
     <Stack spacing={3}>
-      <Typography variant="h4">{t("contributions.title")}</Typography>
-      <Card variant="outlined">
-        <CardContent>
-          <Stack spacing={2}>
-            <Typography variant="h6">{t("contributions.filters")}</Typography>
+      <Stack spacing={0.5}>
+        <Typography variant="h4">{t("contributions.title")}</Typography>
+        {!filters ? (
+          <Typography variant="body2" color="text.secondary">
+            {t("common.notQueried")}
+          </Typography>
+        ) : null}
+      </Stack>
+      <Card variant="outlined" sx={{ overflow: "hidden" }}>
+        <CardContent sx={{ p: 2.5 }}>
+          <Stack spacing={2.25}>
+            <Typography variant="subtitle1">{t("contributions.filters")}</Typography>
             <Grid container spacing={2}>
               <Grid size={{ xs: 12, md: 4 }}>
                 <TextField
@@ -215,7 +225,7 @@ export function ContributionsPage() {
                   fullWidth
                   variant="contained"
                   startIcon={query.isFetching ? <CircularProgress color="inherit" size={18} /> : <SearchIcon />}
-                  sx={{ height: "100%" }}
+                  sx={{ minHeight: 40 }}
                   onClick={() =>
                     {
                       setProgress({ completedPages: 0, maxPages: limitPages, phase: "list", batchSize: 500 });
@@ -237,7 +247,7 @@ export function ContributionsPage() {
             </Grid>
           </Stack>
           {query.isFetching ? (
-            <Stack spacing={1} sx={{ mt: 2 }}>
+            <Stack spacing={1}>
               <LinearProgress
                 variant="determinate"
                 value={
@@ -259,7 +269,6 @@ export function ContributionsPage() {
         </CardContent>
       </Card>
       {query.error ? <ErrorState error={query.error} /> : null}
-      {!filters ? <Typography color="text.secondary">{t("common.notQueried")}</Typography> : null}
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, md: 3 }}>
           <MetricCard label={t("metrics.totalEdits")} value={stats?.totalEdits ?? 0} />
@@ -274,11 +283,10 @@ export function ContributionsPage() {
       <Card variant="outlined">
         <CardContent>
           <Box sx={{ height: 560 }}>
-            <DataGrid
+            <WikiDataGrid
               rows={records}
               columns={columns}
               loading={query.isLoading || query.isFetching}
-              pageSizeOptions={[25, 50, 100]}
               initialState={{ pagination: { paginationModel: { pageSize: 25 } } }}
               disableRowSelectionOnClick
             />
@@ -287,22 +295,22 @@ export function ContributionsPage() {
       </Card>
       <Grid container spacing={2}>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.editTrend")} points={stats?.daily ?? []} defaultKind="line" />
+          <SwitchableChart title={t("metrics.editTrend")} points={stats?.daily ?? []} defaultKind="line" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.namespace")} points={stats?.namespaces ?? []} defaultKind="pie" />
+          <SwitchableChart title={t("charts.namespace")} points={stats?.namespaces ?? []} defaultKind="pie" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topEditedPages")} points={stats?.topPages ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.topEditedPages")} points={stats?.topPages ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
         <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topUsers")} points={stats?.topUsers ?? []} defaultKind="bar" />
+          <SwitchableChart title={t("charts.topUsers")} points={stats?.topUsers ?? []} defaultKind="bar" availableKinds={allChartKinds} />
         </Grid>
       </Grid>
     </Stack>

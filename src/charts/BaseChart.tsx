@@ -13,7 +13,7 @@ import ReactECharts from "echarts-for-react";
 import type { EChartsOption } from "echarts";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { barOption, lineOption, pieOption, type ChartPoint } from "./chartOptions";
+import { barOption, lineOption, pieOption, radarOption, scatterOption, type ChartPoint } from "./chartOptions";
 
 export function BaseChart({ title, option }: { title: string; option: EChartsOption }) {
   const theme = useTheme();
@@ -41,7 +41,7 @@ export function BaseChart({ title, option }: { title: string; option: EChartsOpt
   );
 }
 
-export type ChartKind = "line" | "bar" | "pie";
+export type ChartKind = "line" | "bar" | "pie" | "scatter" | "radar";
 
 export function SwitchableChart({
   title,
@@ -54,28 +54,51 @@ export function SwitchableChart({
   points: ChartPoint[];
   defaultKind: ChartKind;
   unit?: string;
-  availableKinds?: ChartKind[];
+  availableKinds?: readonly ChartKind[];
 }) {
   const { t } = useTranslation();
   const [kind, setKind] = useState<ChartKind>(defaultKind);
+  const [logScale, setLogScale] = useState(false);
 
   const option =
-    kind === "line" ? lineOption(points, unit) : kind === "bar" ? barOption(points, unit) : pieOption(points);
+    kind === "line"
+      ? lineOption(points, unit, logScale)
+      : kind === "bar"
+        ? barOption(points, unit, logScale)
+        : kind === "scatter"
+          ? scatterOption(points, unit, logScale)
+          : kind === "radar"
+            ? radarOption(points, unit)
+            : pieOption(points);
+  const canUseLogScale = kind === "line" || kind === "bar" || kind === "scatter";
 
   return (
     <Card variant="outlined">
       <CardContent>
         <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 1 }}>
           <Typography variant="subtitle1">{title}</Typography>
-          <FormControl size="small" sx={{ minWidth: 108 }}>
-            <Select value={kind} onChange={(event) => setKind(event.target.value as ChartKind)}>
-              {availableKinds.map((item) => (
-                <MenuItem key={item} value={item}>
-                  {t(`chartTypes.${item}`)}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
+          <Stack direction="row" spacing={1}>
+            <FormControl size="small" sx={{ minWidth: 108 }}>
+              <Select value={kind} onChange={(event) => setKind(event.target.value as ChartKind)}>
+                {availableKinds.map((item) => (
+                  <MenuItem key={item} value={item}>
+                    {t(`chartTypes.${item}`)}
+                  </MenuItem>
+                ))}
+              </Select>
+            </FormControl>
+            {canUseLogScale ? (
+              <FormControl size="small" sx={{ minWidth: 92 }}>
+                <Select
+                  value={logScale ? "log" : "linear"}
+                  onChange={(event) => setLogScale(event.target.value === "log")}
+                >
+                  <MenuItem value="linear">{t("scaleTypes.linear")}</MenuItem>
+                  <MenuItem value="log">{t("scaleTypes.log")}</MenuItem>
+                </Select>
+              </FormControl>
+            ) : null}
+          </Stack>
         </Stack>
         <BaseChartBody option={option} />
       </CardContent>

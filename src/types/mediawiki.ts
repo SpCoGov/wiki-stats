@@ -121,6 +121,7 @@ export interface PatrolFilters {
   user?: string;
   userGroup?: string;
   userRight?: string;
+  includeSpeed?: boolean;
   start?: string;
   end?: string;
   title?: string;

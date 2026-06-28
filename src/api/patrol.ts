@@ -149,6 +149,10 @@ export async function fetchPatrolLogs(
     }),
   );
 
+  if (filters.includeSpeed === false) {
+    return records;
+  }
+
   const revisionIds = records
     .map((record) => record.revisionId)
     .filter((revisionId): revisionId is number => Boolean(revisionId));
