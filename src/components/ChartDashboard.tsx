@@ -77,6 +77,9 @@ export function ChartDashboard({
   const [layout, setLayout] = useState(() => readStoredLayout(storageKey, charts));
   const [draggedId, setDraggedId] = useState<string | undefined>();
   const latestDraggedId = useRef<string | undefined>(undefined);
+  const latestPreview = useRef<string | undefined>(undefined);
+  const dragFrame = useRef<number | undefined>(undefined);
+  const dragPoint = useRef<{ container: HTMLDivElement; x: number; y: number } | undefined>(undefined);
   const chartMap = useMemo(
     () => new Map(charts.map((chart) => [chart.id, chart])),
     [charts],
@@ -127,6 +130,11 @@ export function ChartDashboard({
         return items;
       }
       const insertIndex = placement === "after" ? targetIndex + 1 : targetIndex;
+      const previewKey = `${targetId}:${placement}:${insertIndex}`;
+      if (latestPreview.current === previewKey) {
+        return items;
+      }
+      latestPreview.current = previewKey;
       return [
         ...withoutDragged.slice(0, insertIndex),
         dragged,
@@ -135,33 +143,21 @@ export function ChartDashboard({
     });
   }
 
-  function movePreview(event: React.DragEvent<HTMLDivElement>) {
-    event.preventDefault();
+  function movePreview(container: HTMLDivElement, x: number, y: number) {
     const activeDraggedId = latestDraggedId.current;
     if (!activeDraggedId) {
       return;
     }
 
-    const items = [...event.currentTarget.querySelectorAll<HTMLElement>("[data-chart-id]")]
+    const items = [...container.querySelectorAll<HTMLElement>("[data-chart-id]")]
       .filter((element) => element.dataset.chartId !== activeDraggedId)
       .map((element) => ({ element, rect: element.getBoundingClientRect() }));
-    const hovered =
-      items.find(({ rect }) =>
-        event.clientX >= rect.left &&
-        event.clientX <= rect.right &&
-        event.clientY >= rect.top &&
-        event.clientY <= rect.bottom,
-      ) ??
-      items
-        .map((item) => {
-          const centerX = item.rect.left + item.rect.width / 2;
-          const centerY = item.rect.top + item.rect.height / 2;
-          return {
-            ...item,
-            distance: Math.hypot(event.clientX - centerX, event.clientY - centerY),
-          };
-        })
-        .sort((a, b) => a.distance - b.distance)[0];
+    const hovered = items.find(({ rect }) =>
+      x >= rect.left &&
+      x <= rect.right &&
+      y >= rect.top &&
+      y <= rect.bottom,
+    );
 
     const targetId = hovered?.element.dataset.chartId;
     if (!targetId) {
@@ -170,9 +166,46 @@ export function ChartDashboard({
 
     const rect = hovered.rect;
     const horizontal = rect.width > rect.height * 1.35;
-    const midpoint = horizontal ? rect.left + rect.width / 2 : rect.top + rect.height / 2;
-    const pointer = horizontal ? event.clientX : event.clientY;
-    moveItem(targetId, pointer > midpoint ? "after" : "before");
+    const pointer = horizontal ? x : y;
+    const start = horizontal ? rect.left : rect.top;
+    const length = horizontal ? rect.width : rect.height;
+    const ratio = (pointer - start) / length;
+
+    if (ratio > 0.38 && ratio < 0.62) {
+      return;
+    }
+
+    moveItem(targetId, ratio >= 0.62 ? "after" : "before");
+  }
+
+  function scheduleMovePreview(event: React.DragEvent<HTMLDivElement>) {
+    event.preventDefault();
+    dragPoint.current = {
+      container: event.currentTarget,
+      x: event.clientX,
+      y: event.clientY,
+    };
+    if (dragFrame.current !== undefined) {
+      return;
+    }
+    dragFrame.current = window.requestAnimationFrame(() => {
+      dragFrame.current = undefined;
+      const point = dragPoint.current;
+      if (point) {
+        movePreview(point.container, point.x, point.y);
+      }
+    });
+  }
+
+  function endDrag() {
+    if (dragFrame.current !== undefined) {
+      window.cancelAnimationFrame(dragFrame.current);
+    }
+    dragFrame.current = undefined;
+    dragPoint.current = undefined;
+    latestDraggedId.current = undefined;
+    latestPreview.current = undefined;
+    setDraggedId(undefined);
   }
 
   return (
@@ -207,11 +240,8 @@ export function ChartDashboard({
           gap: 2,
           gridTemplateColumns: "repeat(12, minmax(0, 1fr))",
         }}
-        onDragOver={movePreview}
-        onDrop={() => {
-          latestDraggedId.current = undefined;
-          setDraggedId(undefined);
-        }}
+        onDragOver={scheduleMovePreview}
+        onDrop={endDrag}
       >
         {layout.map((item) => {
           const chart = chartMap.get(item.id);
@@ -227,12 +257,10 @@ export function ChartDashboard({
               onDragStart={(event) => {
                 event.dataTransfer.effectAllowed = "move";
                 latestDraggedId.current = item.id;
+                latestPreview.current = undefined;
                 setDraggedId(item.id);
               }}
-              onDragEnd={() => {
-                latestDraggedId.current = undefined;
-                setDraggedId(undefined);
-              }}
+              onDragEnd={endDrag}
               sx={{
                 gridColumn: { xs: "span 12", md: `span ${item.width}` },
                 opacity: draggedId === item.id ? 0.55 : 1,
