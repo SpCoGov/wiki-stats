@@ -75,6 +75,7 @@ export function scatterOption(points: ChartPoint[], unit?: string, logScale?: bo
 
 export function radarOption(points: ChartPoint[], unit?: string): EChartsOption {
   const visiblePoints = points.slice(0, 12);
+  const maxValue = Math.max(1, ...visiblePoints.map((point) => point.value));
   return {
     tooltip: {
       trigger: "item",
@@ -86,7 +87,7 @@ export function radarOption(points: ChartPoint[], unit?: string): EChartsOption 
     radar: {
       indicator: visiblePoints.map((point) => ({
         name: point.label,
-        max: Math.max(1, point.value),
+        max: maxValue,
       })),
       radius: "65%",
     },
