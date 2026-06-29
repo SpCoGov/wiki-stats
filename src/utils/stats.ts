@@ -77,15 +77,57 @@ export function trendLabel(timestamp: string, granularity: TrendGranularity) {
   return time.format("YYYY-MM-DD");
 }
 
+function trendDateFromLabel(label: string, granularity: TrendGranularity) {
+  if (granularity === "week") {
+    const [year, week] = label.split("-W").map(Number);
+    return dayjs(`${year}-01-01`).add((week - 1) * 7, "day");
+  }
+  return dayjs(label);
+}
+
+function addTrendStep(date: dayjs.Dayjs, granularity: TrendGranularity) {
+  if (granularity === "week") {
+    return date.add(7, "day");
+  }
+  if (granularity === "month") {
+    return date.add(1, "month");
+  }
+  return date.add(1, "day");
+}
+
+function completeTrend(points: { label: string; value: number }[], granularity: TrendGranularity) {
+  if (points.length < 2) {
+    return points;
+  }
+
+  const values = new Map(points.map((point) => [point.label, point.value]));
+  const start = trendDateFromLabel(points[0].label, granularity);
+  const end = trendDateFromLabel(points[points.length - 1].label, granularity);
+  const completed: { label: string; value: number }[] = [];
+
+  for (let cursor = start; cursor.isBefore(end) || cursor.isSame(end); cursor = addTrendStep(cursor, granularity)) {
+    const label = trendLabel(cursor.toISOString(), granularity);
+    completed.push({ label, value: values.get(label) ?? 0 });
+  }
+
+  return completed;
+}
+
 export function getContributionTrend(records: ContributionRecord[], granularity: TrendGranularity) {
-  return countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
-    a.label.localeCompare(b.label),
+  return completeTrend(
+    countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    ),
+    granularity,
   );
 }
 
 export function getPatrolTrend(records: PatrolRecord[], granularity: TrendGranularity) {
-  return countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
-    a.label.localeCompare(b.label),
+  return completeTrend(
+    countBy(records, (record) => trendLabel(record.timestamp, granularity)).sort((a, b) =>
+      a.label.localeCompare(b.label),
+    ),
+    granularity,
   );
 }
 
@@ -166,11 +208,14 @@ export function getPatrolStats(records: PatrolRecord[]): PatrolStats {
       (record) => record.namespaceName ?? String(record.namespace ?? "-"),
       (record) => record.patrolDelayMs,
     ),
-    averageDelayDaily: averageBy(
-      completeRecords,
-      (record) => dayjs(record.timestamp).format("YYYY-MM-DD"),
-      (record) => record.patrolDelayMs,
-    ).sort((a, b) => a.label.localeCompare(b.label)),
+    averageDelayDaily: completeTrend(
+      averageBy(
+        completeRecords,
+        (record) => dayjs(record.timestamp).format("YYYY-MM-DD"),
+        (record) => record.patrolDelayMs,
+      ).sort((a, b) => a.label.localeCompare(b.label)),
+      "day",
+    ),
     peakHour,
   };
 }

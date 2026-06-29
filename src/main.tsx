@@ -7,7 +7,13 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { SettingsProvider } from './stores/settingsStore.tsx'
 import { AppThemeProvider } from './theme/ThemeProvider.tsx'
 
-const queryClient = new QueryClient()
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+    },
+  },
+})
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
