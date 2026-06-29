@@ -1,4 +1,4 @@
-import { queryMediaWiki } from "./mediaWikiClient";
+import { queryMediaWiki, queryMediaWikiMany } from "./mediaWikiClient";
 import type { QueryProgress } from "../types/mediawiki";
 
 interface WikiUser {
@@ -11,6 +11,10 @@ interface WikiUser {
 
 interface UsersQuery {
   users?: WikiUser[];
+}
+
+interface AllUsersQuery {
+  allusers?: WikiUser[];
 }
 
 function chunk<T>(items: T[], size: number) {
@@ -53,4 +57,40 @@ export async function fetchUsersMeta(
   }
 
   return result;
+}
+
+export async function fetchUsersByGroupOrRight(
+  endpoint: string,
+  filters: { userGroup?: string; userRight?: string; limitPages?: number },
+  signal?: AbortSignal,
+  onProgress?: (progress: QueryProgress) => void,
+) {
+  const group = filters.userGroup?.trim();
+  const right = filters.userRight?.trim();
+
+  if (!group && !right) {
+    return [];
+  }
+
+  const pages = await queryMediaWikiMany<AllUsersQuery>(
+    endpoint,
+    {
+      list: "allusers",
+      augroup: group,
+      aurights: right,
+      aulimit: 500,
+      auprop: "groups",
+    },
+    {
+      continuationKeys: ["aufrom"],
+      maxPages: filters.limitPages ?? 3,
+      onProgress: (progress) => onProgress?.({ ...progress, phase: "userMeta" }),
+    },
+    signal,
+  );
+
+  return pages
+    .flatMap((page) => page.query?.allusers ?? [])
+    .filter((user) => !group || user.groups?.includes(group))
+    .map((user) => user.name);
 }

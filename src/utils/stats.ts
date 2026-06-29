@@ -116,7 +116,7 @@ export function getContributionStats(records: ContributionRecord[]): Contributio
     weekday: weekdays,
     namespaces: countBy(records, (record) => record.namespaceName ?? String(record.namespace)),
     topPages: countBy(records, (record) => record.title).slice(0, 10),
-    topUsers: countBy(records, (record) => record.user || "-").slice(0, 10),
+    topUsers: countBy(records, (record) => record.user || "-"),
     peakHour,
   };
 }

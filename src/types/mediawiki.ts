@@ -43,6 +43,23 @@ export interface UserContribution {
   tags?: string[];
 }
 
+export interface RecentChange {
+  userid?: number;
+  user?: string;
+  pageid?: number;
+  revid: number;
+  old_revid?: number;
+  ns: number;
+  title: string;
+  timestamp: string;
+  comment?: string;
+  oldlen?: number;
+  newlen?: number;
+  minor?: boolean | "";
+  new?: boolean | "";
+  tags?: string[];
+}
+
 export interface ContributionRecord {
   id: number;
   user: string;
@@ -63,6 +80,7 @@ export interface ContributionRecord {
 
 export interface ContributionFilters {
   user?: string;
+  users?: string[];
   userGroup?: string;
   userRight?: string;
   start?: string;

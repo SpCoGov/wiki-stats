@@ -2,6 +2,8 @@ import type { MediaWikiResponse, QueryProgress, WikiContinuation } from "../type
 import { MediaWikiClientError, isPrivateLogLikeError } from "./errors";
 
 const requestTimeoutMs = 20_000;
+const retryableStatusCodes = new Set([429, 502, 503, 504]);
+const maxRequestAttempts = 4;
 
 export interface QueryManyOptions {
   continuationKeys: string[];
@@ -72,14 +74,35 @@ function logMediaWikiResult(
   });
 }
 
+function delay(ms: number, signal?: AbortSignal) {
+  return new Promise<void>((resolve, reject) => {
+    const timeout = window.setTimeout(resolve, ms);
+    signal?.addEventListener(
+      "abort",
+      () => {
+        window.clearTimeout(timeout);
+        reject(new DOMException("Request timed out or was cancelled.", "AbortError"));
+      },
+      { once: true },
+    );
+  });
+}
+
+function retryDelayMs(response: Response, attempt: number) {
+  const retryAfter = response.headers.get("retry-after");
+  const retryAfterSeconds = retryAfter ? Number(retryAfter) : Number.NaN;
+  if (Number.isFinite(retryAfterSeconds) && retryAfterSeconds > 0) {
+    return retryAfterSeconds * 1000;
+  }
+
+  return Math.min(30_000, 1000 * 2 ** attempt);
+}
+
 export async function queryMediaWiki<TQuery>(
   endpoint: string,
   params: Record<string, string | number | boolean | undefined>,
   signal?: AbortSignal,
 ) {
-  const controller = new AbortController();
-  const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
-  const combinedSignal = signal ? composeAbortSignals([signal, controller.signal]) : controller.signal;
   const url = new URL(endpoint);
   const requestParams = withRequiredParams(params);
 
@@ -90,22 +113,36 @@ export async function queryMediaWiki<TQuery>(
   });
 
   try {
-    const response = await fetch(url.toString(), { signal: combinedSignal });
-    if (!response.ok) {
-      throw new MediaWikiClientError(response.statusText, String(response.status));
-    }
+    for (let attempt = 0; attempt < maxRequestAttempts; attempt += 1) {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), requestTimeoutMs);
+      const combinedSignal = signal ? composeAbortSignals([signal, controller.signal]) : controller.signal;
 
-    const json = (await response.json()) as MediaWikiResponse<TQuery>;
-    logMediaWikiResult(endpoint, requestParams, json as MediaWikiResponse<unknown>);
-    if (json.error) {
-      throw new MediaWikiClientError(
-        json.error.info,
-        json.error.code,
-        isPrivateLogLikeError(json.error.code, json.error.info),
-      );
-    }
+      try {
+        const response = await fetch(url.toString(), { signal: combinedSignal });
+        if (!response.ok) {
+          if (retryableStatusCodes.has(response.status) && attempt + 1 < maxRequestAttempts) {
+            await delay(retryDelayMs(response, attempt), signal);
+            continue;
+          }
+          throw new MediaWikiClientError(response.statusText, String(response.status));
+        }
 
-    return json;
+        const json = (await response.json()) as MediaWikiResponse<TQuery>;
+        logMediaWikiResult(endpoint, requestParams, json as MediaWikiResponse<unknown>);
+        if (json.error) {
+          throw new MediaWikiClientError(
+            json.error.info,
+            json.error.code,
+            isPrivateLogLikeError(json.error.code, json.error.info),
+          );
+        }
+
+        return json;
+      } finally {
+        window.clearTimeout(timeout);
+      }
+    }
   } catch (error) {
     if (error instanceof MediaWikiClientError) {
       throw error;
@@ -117,9 +154,9 @@ export async function queryMediaWiki<TQuery>(
       "Unable to reach the Wiki API. Check the endpoint and CORS settings.",
       "network",
     );
-  } finally {
-    window.clearTimeout(timeout);
   }
+
+  throw new MediaWikiClientError("Too many requests. Please wait and try again.", "429");
 }
 
 export async function queryMediaWikiMany<TQuery>(

@@ -6,7 +6,7 @@ export function WikiDataGrid(props: DataGridProps) {
 
   return (
     <DataGrid
-      pageSizeOptions={[25, 50, 100, 250, 500]}
+      pageSizeOptions={[25, 50, 100]}
       localeText={{
         paginationRowsPerPage: t("dataGrid.rowsPerPage"),
         paginationDisplayedRows: ({ from, to, count }: { from: number; to: number; count: number }) =>
