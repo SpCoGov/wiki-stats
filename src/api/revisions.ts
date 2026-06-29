@@ -61,7 +61,7 @@ export async function fetchUserContributions(
           ucuser: batch.join("|"),
           ucstart: filters.start,
           ucend: filters.end,
-          ucnamespace: filters.namespace === "all" ? undefined : filters.namespace,
+          ucnamespace: filters.namespaces?.length ? filters.namespaces.join("|") : undefined,
           ucshow:
             filters.minor === "minor" ? "minor" : filters.minor === "nonminor" ? "!minor" : undefined,
           uclimit: 500,
@@ -115,7 +115,7 @@ export async function fetchRecentContributionRecords(
       rctype: "edit|new",
       rcstart: filters.start,
       rcend: filters.end,
-      rcnamespace: filters.namespace === "all" ? undefined : filters.namespace,
+      rcnamespace: filters.namespaces?.length ? filters.namespaces.join("|") : undefined,
       rcshow:
         filters.minor === "minor" ? "minor" : filters.minor === "nonminor" ? "!minor" : undefined,
       rclimit: 500,

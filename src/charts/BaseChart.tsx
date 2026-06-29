@@ -49,12 +49,16 @@ export function SwitchableChart({
   defaultKind,
   unit,
   availableKinds = ["line", "bar", "pie"],
+  height = 300,
+  headerActions,
 }: {
   title: string;
   points: ChartPoint[];
   defaultKind: ChartKind;
   unit?: string;
   availableKinds?: readonly ChartKind[];
+  height?: number;
+  headerActions?: React.ReactNode;
 }) {
   const { t } = useTranslation();
   const [kind, setKind] = useState<ChartKind>(defaultKind);
@@ -75,9 +79,10 @@ export function SwitchableChart({
   return (
     <Card variant="outlined">
       <CardContent>
-        <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 1 }}>
+        <Stack direction="row" sx={{ alignItems: "center", justifyContent: "space-between", mb: 1, gap: 1 }}>
           <Typography variant="subtitle1">{title}</Typography>
-          <Stack direction="row" spacing={1}>
+          <Stack direction="row" spacing={1} sx={{ alignItems: "center" }}>
+            {headerActions}
             <FormControl size="small" sx={{ minWidth: 108 }}>
               <Select value={kind} onChange={(event) => setKind(event.target.value as ChartKind)}>
                 {availableKinds.map((item) => (
@@ -100,17 +105,17 @@ export function SwitchableChart({
             ) : null}
           </Stack>
         </Stack>
-        <BaseChartBody option={option} />
+        <BaseChartBody option={option} height={height} />
       </CardContent>
     </Card>
   );
 }
 
-function BaseChartBody({ option }: { option: EChartsOption }) {
+function BaseChartBody({ option, height = 300 }: { option: EChartsOption; height?: number }) {
   const theme = useTheme();
 
   return (
-    <Box sx={{ height: 300 }}>
+    <Box sx={{ height }}>
       <ReactECharts
         option={{
           backgroundColor: "transparent",

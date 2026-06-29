@@ -5,10 +5,12 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   CircularProgress,
   FormControl,
   Grid,
   InputLabel,
+  ListItemText,
   LinearProgress,
   MenuItem,
   Select,
@@ -19,7 +21,7 @@ import {
 import type { GridColDef } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SwitchableChart } from "../charts/BaseChart";
+import { ChartDashboard, type DashboardChartDefinition } from "../components/ChartDashboard";
 import { ErrorState } from "../components/ErrorState";
 import { MetricCard } from "../components/MetricCard";
 import { WikiDataGrid } from "../components/WikiDataGrid";
@@ -45,7 +47,7 @@ export function ContributionsPage() {
   const [user, setUser] = useState("");
   const [userGroup, setUserGroup] = useState("");
   const [userRight, setUserRight] = useState("");
-  const [namespace, setNamespace] = useState<number | "all">("all");
+  const [namespaces, setNamespaces] = useState<number[]>([]);
   const [minor, setMinor] = useState<"all" | "minor" | "nonminor">("all");
   const [limitPages, setLimitPages] = useState(3);
   const [dateRange, setDateRange] = useState<DateRangePreset>("30d");
@@ -68,7 +70,7 @@ export function ContributionsPage() {
       batchSize: nextProgress.batchSize,
     }),
   );
-  const namespaceQuery = useNamespaces(Boolean(filters));
+  const namespaceQuery = useNamespaces(true);
   const records = useMemo(
     () =>
       (query.data?.records ?? []).map((record) => ({
@@ -81,6 +83,53 @@ export function ContributionsPage() {
   const trend = useMemo(
     () => getContributionTrend(records, trendGranularity),
     [records, trendGranularity],
+  );
+  const chartDefinitions = useMemo<DashboardChartDefinition[]>(
+    () => [
+      {
+        id: "editTrend",
+        title: t("metrics.editTrend"),
+        points: trend,
+        defaultKind: "line",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "hourly",
+        title: t("charts.hourly"),
+        points: stats?.hourly ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "weekday",
+        title: t("charts.weekday"),
+        points: stats?.weekday ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "namespace",
+        title: t("charts.namespace"),
+        points: stats?.namespaces ?? [],
+        defaultKind: "pie",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "topEditedPages",
+        title: t("charts.topEditedPages"),
+        points: stats?.topPages ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "topUsers",
+        title: t("charts.topUsers"),
+        points: stats?.topUsers ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+    ],
+    [stats, t, trend],
   );
 
   const columns = useMemo<GridColDef[]>(
@@ -199,13 +248,32 @@ export function ContributionsPage() {
                 </>
               ) : null}
               <Grid size={{ xs: 12, md: 2 }}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label={t("contributions.namespace")}
-                  value={namespace === "all" ? "" : namespace}
-                  onChange={(event) => setNamespace(event.target.value === "" ? "all" : Number(event.target.value))}
-                />
+                <FormControl fullWidth>
+                  <InputLabel>{t("contributions.namespace")}</InputLabel>
+                  <Select
+                    multiple
+                    value={namespaces}
+                    label={t("contributions.namespace")}
+                    renderValue={(selected) =>
+                      selected.length === 0
+                        ? t("common.all")
+                        : selected.map((id) => namespaceLabel(id, namespaceQuery.data)).join(", ")
+                    }
+                    onChange={(event) => {
+                      const value = event.target.value;
+                      setNamespaces(typeof value === "string" ? value.split(",").map(Number) : value);
+                    }}
+                  >
+                    {[...(namespaceQuery.data?.entries() ?? [])]
+                      .sort(([left], [right]) => left - right)
+                      .map(([id, name]) => (
+                        <MenuItem key={id} value={id}>
+                          <Checkbox checked={namespaces.includes(id)} />
+                          <ListItemText primary={name} secondary={id} />
+                        </MenuItem>
+                      ))}
+                  </Select>
+                </FormControl>
               </Grid>
               <Grid size={{ xs: 12, md: 2 }}>
                 <FormControl fullWidth>
@@ -241,7 +309,7 @@ export function ContributionsPage() {
                         user,
                         userGroup,
                         userRight,
-                        namespace,
+                        namespaces,
                         minor,
                         limitPages,
                       });
@@ -340,26 +408,7 @@ export function ContributionsPage() {
           </Box>
         </CardContent>
       </Card>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.editTrend")} points={trend} defaultKind="line" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.namespace")} points={stats?.namespaces ?? []} defaultKind="pie" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topEditedPages")} points={stats?.topPages ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topUsers")} points={stats?.topUsers ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-      </Grid>
+      <ChartDashboard storageKey="wiki-stats.contributions.charts" charts={chartDefinitions} />
     </Stack>
   );
 }

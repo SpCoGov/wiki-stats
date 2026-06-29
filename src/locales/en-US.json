@@ -149,6 +149,19 @@
     "week": "Weekly",
     "month": "Monthly"
   },
+  "dashboard": {
+    "addChart": "Add chart",
+    "resetLayout": "Reset layout",
+    "drag": "Drag to reorder",
+    "remove": "Remove chart",
+    "widthSmall": "Small",
+    "widthMedium": "Medium",
+    "widthWide": "Wide",
+    "widthFull": "Full",
+    "heightSmall": "Low",
+    "heightMedium": "Mid",
+    "heightLarge": "Tall"
+  },
   "settings": {
     "title": "Settings",
     "apiEndpoint": "Wiki API Endpoint",

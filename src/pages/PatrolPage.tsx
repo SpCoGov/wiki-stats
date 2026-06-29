@@ -21,7 +21,7 @@ import {
 import type { GridColDef } from "@mui/x-data-grid";
 import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SwitchableChart } from "../charts/BaseChart";
+import { ChartDashboard, type DashboardChartDefinition } from "../components/ChartDashboard";
 import { ErrorState } from "../components/ErrorState";
 import { MetricCard } from "../components/MetricCard";
 import { WikiDataGrid } from "../components/WikiDataGrid";
@@ -82,6 +82,86 @@ export function PatrolPage() {
   );
   const stats = useMemo(() => getPatrolStats(records), [records]);
   const trend = useMemo(() => getPatrolTrend(records, trendGranularity), [records, trendGranularity]);
+  const chartDefinitions = useMemo<DashboardChartDefinition[]>(
+    () => [
+      {
+        id: "patrolTrend",
+        title: t("metrics.patrolTrend"),
+        points: trend,
+        defaultKind: "line",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "hourly",
+        title: t("charts.hourly"),
+        points: stats?.hourly ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "weekday",
+        title: t("charts.weekday"),
+        points: stats?.weekday ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "topUsers",
+        title: t("charts.topUsers"),
+        points: stats?.topPatrollers ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "topPatrolledPages",
+        title: t("charts.topPatrolledPages"),
+        points: stats?.topPages ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "speedDistribution",
+        title: t("charts.speedDistribution"),
+        points: stats?.delayDistribution ?? [],
+        defaultKind: "bar",
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "averageSpeedTrend",
+        title: t("charts.averageSpeedTrend"),
+        points: (stats?.averageDelayDaily ?? []).map((point) => ({
+          ...point,
+          value: Math.round(point.value / 1000 / 60),
+        })),
+        defaultKind: "line",
+        unit: t("units.minutes"),
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "averageSpeedByUser",
+        title: t("charts.averageSpeedByUser"),
+        points: (stats?.averageDelayByPatroller ?? []).map((point) => ({
+          ...point,
+          value: Math.round(point.value / 1000 / 60),
+        })),
+        defaultKind: "bar",
+        unit: t("units.minutes"),
+        availableKinds: allChartKinds,
+      },
+      {
+        id: "averageSpeedByNamespace",
+        title: t("charts.averageSpeedByNamespace"),
+        points: (stats?.averageDelayByNamespace ?? []).map((point) => ({
+          ...point,
+          value: Math.round(point.value / 1000 / 60),
+        })),
+        defaultKind: "bar",
+        unit: t("units.minutes"),
+        availableKinds: allChartKinds,
+      },
+    ],
+    [stats, t, trend],
+  );
 
   const columns = useMemo<GridColDef[]>(
     () => [
@@ -366,53 +446,7 @@ export function PatrolPage() {
           </Box>
         </CardContent>
       </Card>
-      <Grid container spacing={2}>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("metrics.patrolTrend")} points={trend} defaultKind="line" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.hourly")} points={stats?.hourly ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.weekday")} points={stats?.weekday ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topUsers")} points={stats?.topPatrollers ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.topPatrolledPages")} points={stats?.topPages ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart title={t("charts.speedDistribution")} points={stats?.delayDistribution ?? []} defaultKind="bar" availableKinds={allChartKinds} />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart
-            title={t("charts.averageSpeedTrend")}
-            points={(stats?.averageDelayDaily ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
-            defaultKind="line"
-            unit={t("units.minutes")}
-            availableKinds={allChartKinds}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart
-            title={t("charts.averageSpeedByUser")}
-            points={(stats?.averageDelayByPatroller ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
-            defaultKind="bar"
-            unit={t("units.minutes")}
-            availableKinds={allChartKinds}
-          />
-        </Grid>
-        <Grid size={{ xs: 12, lg: 6 }}>
-          <SwitchableChart
-            title={t("charts.averageSpeedByNamespace")}
-            points={(stats?.averageDelayByNamespace ?? []).map((point) => ({ ...point, value: Math.round(point.value / 1000 / 60) }))}
-            defaultKind="bar"
-            unit={t("units.minutes")}
-            availableKinds={allChartKinds}
-          />
-        </Grid>
-      </Grid>
+      <ChartDashboard storageKey="wiki-stats.patrol.charts" charts={chartDefinitions} />
     </Stack>
   );
 }

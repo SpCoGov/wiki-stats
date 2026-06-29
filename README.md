@@ -12,23 +12,21 @@ A pure frontend React dashboard for MediaWiki contribution and patrol statistics
 - Apache ECharts
 - i18next
 
-## Supported Features
+## Features
 
-- Configurable MediaWiki API endpoint
-- Settings stored in `localStorage`
-- Light, dark, and system theme modes
-- `zh-CN`, `en-US`, and `ja-JP` locale structure
-- Contribution queries with `list=usercontribs`
-- Patrol log queries with `list=logevents&letype=patrol`
-- Optional patrol speed calculation from patrol time and revision time
-- Filters for user, user group, permission, date range, namespace, minor edits, page title, and request batch count
-- Batch progress display for main list, revision detail, and user metadata requests
-- DataGrid tables with sorting, pagination, localized labels, and diff links
-- Namespace name lookup through siteinfo
-- Chart type switching between line, bar, scatter, radar, and pie charts
-- Linear and logarithmic chart scales for supported chart types
-- Localized error handling for network, timeout, API, and private log failures
-- GitHub Pages deployment workflow
+- MediaWiki contribution statistics and patrol log statistics.
+- Configurable API endpoint, language, and light/dark/system theme.
+- Contribution filters for user, user group, permission, date range, multiple namespaces, minor edits, and request page count.
+- Patrol filters for patroller, user group, permission, page title, date range, and request page count.
+- Batch progress display, request retry handling, and CSV export.
+- Data tables with sorting, pagination, namespace labels, and diff links.
+- Patrol speed metrics based on patrol time and revision time.
+- Charts for trends, hourly and weekday distribution, namespaces, top users, top pages, and patrol speed.
+- Switchable chart types: line, bar, scatter, radar, and pie.
+- Linear and logarithmic chart scales where supported.
+- Customizable chart dashboard with local layout storage, drag ordering, size controls, add/remove charts, and reset.
+- Local settings and chart layouts stored in `localStorage`.
+- GitHub Pages deployment workflow.
 
 ## Development
 

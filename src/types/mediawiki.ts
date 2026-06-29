@@ -85,7 +85,7 @@ export interface ContributionFilters {
   userRight?: string;
   start?: string;
   end?: string;
-  namespace?: number | "all";
+  namespaces?: number[];
   minor?: "all" | "minor" | "nonminor";
   limitPages?: number;
 }

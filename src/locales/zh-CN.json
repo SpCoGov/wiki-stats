@@ -149,6 +149,19 @@
     "week": "按周",
     "month": "按月"
   },
+  "dashboard": {
+    "addChart": "添加图表",
+    "resetLayout": "重置布局",
+    "drag": "拖动排序",
+    "remove": "删除图表",
+    "widthSmall": "窄",
+    "widthMedium": "中",
+    "widthWide": "宽",
+    "widthFull": "整行",
+    "heightSmall": "低",
+    "heightMedium": "中",
+    "heightLarge": "高"
+  },
   "settings": {
     "title": "设置",
     "apiEndpoint": "Wiki API Endpoint",
